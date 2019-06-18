@@ -7,6 +7,12 @@ import (
 
 func main() {
 
+	notSlice := "notSlice"
+	fmt.Println(searchMax(notSlice, func(i, j int) bool { return notSlice[i] > notSlice[j] }))
+
+	sliceEmpty := []int{}
+	fmt.Println(searchMax(sliceEmpty, func(i, j int) bool { return sliceEmpty[i] > sliceEmpty[j] }))
+
 	sliceInt := []int{3, 1, 2, 5, 7, 4}
 	fmt.Println(searchMax(sliceInt, func(i, j int) bool { return sliceInt[i] > sliceInt[j] }))
 
@@ -27,16 +33,26 @@ func main() {
 	fmt.Println(searchMax(sliceStruct, func(i, j int) bool { return sliceStruct[i].Age > sliceStruct[j].Age }))
 }
 
-func searchMax(slice interface{}, c func(i, j int) bool) interface{} {
+func searchMax(slice interface{}, compare func(i, j int) bool) interface{} {
 
-	s := reflect.ValueOf(slice)
+	var result interface{}
 
-	var j int
+	//рефлексия среза для доступа к элементам
+	data := reflect.ValueOf(slice)
 
-	for i := 1; i < s.Len(); i++ {
-		if c(i, j) {
-			j = i
+	if data.Kind() != reflect.Slice {
+		result = "not a slice"
+	} else if data.Len() == 0 {
+		result = "empty slice"
+	} else {
+		// поиск максимального элемента в срезе
+		var j int // индекс первого элемента среза
+		for i := 1; i < data.Len(); i++ {
+			if compare(i, j) {
+				j = i // презаписываем значение j если i > j
+			}
 		}
+		result = data.Index(j) // выводим значение j-го элемента среза
 	}
-	return s.Index(j)
+	return result
 }
